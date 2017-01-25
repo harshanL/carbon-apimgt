@@ -3388,7 +3388,7 @@ public class APIStoreHostObject extends ScriptableObject {
 
                 Subscriber subscriber = new Subscriber(username);
                 APIConsumer apiConsumer = getAPIConsumer(thisObj);
-                Set<SubscribedAPI> subscribedAPIs = apiConsumer.getSubscribedAPIs(subscriber, applicationName, null);
+                Set<SubscribedAPI> subscribedAPIs = apiConsumer.getSubscribedAPIs(subscriber, applicationName, groupingId);
 
                 int i = 0;
                 for (SubscribedAPI subscribedAPI : subscribedAPIs) {
