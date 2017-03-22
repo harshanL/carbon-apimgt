@@ -16,6 +16,9 @@
 
 package org.wso2.carbon.apimgt.impl;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.impl.internal.ServiceReferenceHolder;
 import org.wso2.carbon.apimgt.impl.utils.APIUtil;
 import org.wso2.carbon.context.PrivilegedCarbonContext;
@@ -28,6 +31,10 @@ import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import java.nio.charset.Charset;
 
 public class APIMRegistryServiceImpl implements APIMRegistryService {
+
+    private static final Log log = LogFactory.getLog(APIMRegistryServiceImpl.class);
+
+
     @Override
     public String getConfigRegistryResourceContent(String tenantDomain, final String registryLocation)
                                         throws UserStoreException, RegistryException {
@@ -44,12 +51,17 @@ public class APIMRegistryServiceImpl implements APIMRegistryService {
             Registry registry = ServiceReferenceHolder.getInstance().getRegistryService().getConfigSystemRegistry(tenantId);
             APIUtil.loadTenantRegistry(tenantId);
 
+            if (MultitenantConstants.SUPER_TENANT_ID != tenantId) {
+                APIUtil.loadTenantConf(tenantId);
+            }
+
             if (registry.resourceExists(registryLocation)) {
                 Resource resource = registry.get(registryLocation);
                 content = new String((byte[]) resource.getContent(), Charset.defaultCharset());
             }
-        }
-        finally {
+        } catch (APIManagementException e) {
+            log.error("Error occurred while loading tenant configuration for '" + tenantDomain + "'");
+        } finally {
             PrivilegedCarbonContext.endTenantFlow();
         }
 
