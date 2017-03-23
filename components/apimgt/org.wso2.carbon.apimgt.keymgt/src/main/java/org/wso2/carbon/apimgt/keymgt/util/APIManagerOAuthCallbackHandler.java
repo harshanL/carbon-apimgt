@@ -18,16 +18,14 @@ package org.wso2.carbon.apimgt.keymgt.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.apimgt.api.APIManagementException;
 import org.wso2.carbon.apimgt.impl.APIConstants;
-import org.wso2.carbon.apimgt.impl.dao.ApiMgtDAO;
 import org.wso2.carbon.identity.oauth.callback.AbstractOAuthCallbackHandler;
 import org.wso2.carbon.identity.oauth.callback.OAuthCallback;
 import org.wso2.carbon.identity.oauth2.IdentityOAuth2Exception;
 
+import java.io.IOException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
-import java.io.IOException;
 
 public class APIManagerOAuthCallbackHandler extends AbstractOAuthCallbackHandler {
     
@@ -49,7 +47,15 @@ public class APIManagerOAuthCallbackHandler extends AbstractOAuthCallbackHandler
                 oauthCallback.setAuthorized(true);
             }
             if (OAuthCallback.OAuthCallbackType.SCOPE_VALIDATION_AUTHZ.equals(
-                    oauthCallback.getCallbackType())){
+                    oauthCallback.getCallbackType())) {
+                String[] scopes = oauthCallback.getRequestedScope();
+                //If no scopes have been requested.
+                if (scopes == null || scopes.length == 0) {
+                    //Issue a default scope. The default scope can only be used to access resources which are
+                    // not associated to a scope
+                    scopes = new String[] {APIConstants.OAUTH2_DEFAULT_SCOPE};
+                }
+                oauthCallback.setApprovedScope(scopes);
                 oauthCallback.setValidScope(true);
             }
             if (OAuthCallback.OAuthCallbackType.SCOPE_VALIDATION_TOKEN.equals(
